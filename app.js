@@ -15,74 +15,79 @@ const io = socket(server);
 const chess = new Chess();
 
 let players = {};
-let currentPlayer = 'W'; // White starts by default
+// currentPlayer is handled by chess.turn(), no need to keep this separately
+// let currentPlayer = 'W'; 
 
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
-    res.render("index",{title:"Custom Chess Game"});
+    res.render("index", { title: "Custom Chess Game" });
 });
 
-io.on('connection',function(uniqueSocket){
-    console.log('connected');
-    if(!players.white){
-        players.white=uniqueSocket.id;
-        uniqueSocket.emit('playerRole','w');
-        currentPlayer='B';
-    }
-    else if(!players.black){
-        players.black=uniqueSocket.id;
-        uniqueSocket.emit('playerRole','b');
-        currentPlayer='W';
-    }
-    else{
-        uniqueSocket.emit('spectatorRole');
+io.on('connection', (socket) => {
+    console.log('connected:', socket.id);
+
+    // Assign roles in the order of connection
+    if (!players.white) {
+        players.white = socket.id;
+        socket.emit('playerRole', 'w');
+    } else if (!players.black) {
+        players.black = socket.id;
+        socket.emit('playerRole', 'b');
+    } else {
+        socket.emit('spectatorRole');
     }
 
-    uniqueSocket.on('disconnect',function(){
-        if(uniqueSocket.id===players.white){
+    socket.on('disconnect', () => {
+        if (socket.id === players.white) {
             delete players.white;
-        }
-        else if(uniqueSocket.id===players.black){
+            console.log('White player disconnected');
+        } else if (socket.id === players.black) {
             delete players.black;
+            console.log('Black player disconnected');
         }
-    })
-    uniqueSocket.on('move',(move)=>{
-        try{
-            // mtlb agr white ki baari thi or chl diya black ne toh whi se return krdo usko 
-            if(chess.turn()=='w' && uniqueSocket.id!== players.white){
+    });
+
+    socket.on('move', (move) => {
+        try {
+            // Ensure the right player is making the move
+            if (chess.turn() === 'w' && socket.id !== players.white) {
                 return;
             }
-            // mtlb agr black ki baari thi or chl diya white ne toh usko vahi se return krdo
-            if(chess.turn()=='b' && uniqueSocket.id!==players.black){
+            if (chess.turn() === 'b' && socket.id !== players.black) {
                 return;
             }
-            // kul milakr itna hai ki white ke time sirf white chl paega or black ke time pr sirf black chl paega 
-            // move krdia chess game mein
-            const result=chess.move(move);
-            // chess.move move krne ki kosis krega agr vo shi move hoga ya glt move hoga to vo result ke andr store ho jaega or isi line ki vajah se error aa skta hai isliye try catch ke andr aaya hai
-            if(result){
-                // agr shi result hai toh current player ka turn aa jaega
-                currentPlayer=chess.turn();
-                // jo bhi ek client pr hua usko sbko bhej do jo bhi included hai uss time pr server mein 
-                io.emit("move",move);
-                // fen forsyth edward notation ye btata hai current state of chessboard game
-                io.emit('boardState',chess.fen());// board ki current state emit krdega
+
+            const result = chess.move(move);
+
+            if (result) {
+                // Broadcast the move and board state to all clients
+                io.emit("move", move);
+                io.emit('boardState', chess.fen());
+            } else {
+                console.log('Invalid move attempted:', move);
+                socket.emit('invalidMove', move);
             }
-            else{
-                console.log('Invalid move',move);
-                uniqueSocket.emit('invalidMove',move);
-            }
-        }catch(err){
-            console.log(err);
-            uniqueSocket.emit("Invalid Move: ",move);
+        } catch (err) {
+            console.log('Error processing move:', err);
+            socket.emit('invalidMove', move);
         }
-    })
+    });
+
+    socket.on('requestRole', () => {
+        // If a client reconnects and wants to know role again
+        if (socket.id === players.white) {
+            socket.emit('playerRole', 'w');
+        } else if (socket.id === players.black) {
+            socket.emit('playerRole', 'b');
+        } else {
+            socket.emit('spectatorRole');
+        }
+    });
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Listening on port ${PORT}`);
+server.listen(3000, () => {
+    console.log("listening on port 3000");
 });

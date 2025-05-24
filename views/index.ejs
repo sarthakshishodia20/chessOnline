@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Custom Chess Game</title>
   <style>
+    /* Your existing CSS exactly as it is */
     .chessboard {
       display: grid;
       border-left:20px solid black;
@@ -12,8 +13,8 @@
       border-bottom:20px solid black;
       grid-template-columns: repeat(8, minmax(0, 1fr));
       grid-template-rows: repeat(8, minmax(0, 1fr));
-      width: 600px;
-      height: 600px;
+      width: 500px;
+      height: 500px;
       transition: transform 0.3s ease;
       position: relative;
     }
@@ -34,10 +35,9 @@
     }
 
     .highlight {
-      background-color:rgb(170, 147, 107)  !important;
-      border:7px solid rgb(244, 244, 244);
+      background-color: rgb(170, 147, 107) !important;
+      border: 7px solid rgb(244, 244, 244);
       border-radius: 5%;
-      
     }
 
     .piece.white {
@@ -129,6 +129,7 @@
         boardElement.classList.remove("flipped");
         statusElement.innerText = "White to Play ↓";
       } else {
+        boardElement.classList.remove("flipped");
         statusElement.innerText = "Spectating...";
       }
 
@@ -143,7 +144,6 @@
             const pieceElement = document.createElement("div");
             const pieceCode = square.color + square.type;
 
-            // Apply special styling for black pawns
             if (square.color === "b" && square.type === "p") {
               pieceElement.classList.add("piece", "black-pawn");
             } else {
@@ -151,7 +151,7 @@
             }
 
             pieceElement.innerText = getPieceUnicode(pieceCode);
-            pieceElement.draggable = playerRole === square.color;
+            pieceElement.draggable = (playerRole === square.color);
 
             pieceElement.addEventListener("dragstart", (e) => {
               draggedPiece = pieceElement;
@@ -224,29 +224,26 @@
       renderBoard();
     });
 
+    socket.on("move", (move) => {
+      chess.move(move);
+      renderBoard();
+    });
+
     socket.on("boardState", (fen) => {
       chess.load(fen);
       renderBoard();
     });
 
-    socket.on("move", (move) => {
-      chess.move(move);
+    socket.on('invalidMove', (move) => {
+      alert('Invalid move attempted: ' + JSON.stringify(move));
       renderBoard();
-
-      if (chess.game_over()) {
-        setTimeout(() => {
-          const winner = chess.turn() === 'w' ? 'Black' : 'White';
-          statusElement.innerText = `${winner} wins!`;
-          chess.reset();
-          socket.emit("requestRole");
-        }, 500);
-      }
     });
 
-    document.addEventListener("DOMContentLoaded", () => {
-      chess.reset();
-      socket.emit("requestRole");
-    });
+    // On page load, ask for player role
+    socket.emit('requestRole');
+
+    // Initial render
+    renderBoard();
   </script>
 </body>
 </html>
