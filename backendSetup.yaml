@@ -1,0 +1,89 @@
+# SERVER JS CODE
+
+- Import: express, http, socket.io, chess.js
+
+- Create Express app instance
+- Initialize HTTP server with Express
+- Instantiate Socket.io on HTTP server
+
+- Create Chess object instance (chess.js)
+
+- Initialize:
+    - Players object: track socket IDs, roles (white/black)
+    - CurrentPlayer: track current turn
+
+- Configure Express app:
+    - Use EJS templating engine
+    - Serve static files from 'public' directory
+
+- Define route for root URL
+- Render EJS template "index"
+- Title: "Custom Chess Game"
+
+- Socket.io handles connection event
+- Callback executed on client connect
+- Server assigns role based on availability:
+    - If slots empty:
+        - Assign role (white/black)
+        - Inform player
+    - If slots full:
+        - Designate as spectator
+
+- Client connection:
+    - Assign role based on game state:
+        - If no white player, assign white role
+        - If no black player, assign black role
+        - Emit "playerRole" event with assigned role
+        - If both slots filled, designate as spectator
+        - Emit "spectatorRole" event
+    - Send initial board state using FEN notation
+
+- Client disconnection:
+    - Remove assigned role from players object
+
+- Listen for "move" events:
+    - Validate correct player's turn
+    - If valid:
+        - Update game state
+        - Broadcast move via "move" event
+        - Send updated board state via "boardState" event
+    - If invalid:
+        - Log error message
+
+- Ensure smooth gameplay and real-time updates for all connected clients.
+
+
+
+
+
+- jb bhi server jo hota hai socket io ka vo 3 types mein respond krta hai
+- aapne jo bheja including aapko sbko bhejega vo data like hello in group chat;
+- aapne jo bheja hai aapko chorke sbko bhejega (typing krte ho jb);
+- aapne jo bheja hai kisi ek specific ko bhejega (personal chat);
+
+
+
+
+- jb bhi pehla bnda game mein aaega bydefault white milega
+- agr white available nahi hai mtlb white bnana pdega toh bnao or uski id meri unique socket id rkhna
+- agr agla bnda aaega toh uske liye check hoga ki white wali field available hai ya nai agr nahi hai toh white bnao agr hai toh black bnao
+- agr teesri baar bhi koi aata hai chedck kro white hai agr hai toh black check kro agr black hai toh spectatorRole ke liye allow kro usko
+- emit maane hmko hrr kisi player ko btana pdega ki uska role kya hao playerRole se agr white hai toh btao use ki bhai tu white se khelega agr black hai toh btao useki tu bhai black se khelega or agr dono nahi hai toh spectatorRole ke through btado.
+- agr koi game chorke chla jaye toh usko players object se remove krdo
+
+
+-players={
+-white:"aajbabfaf"
+-black:"aajbabfafg"
+}
+
+
+
+
+
+
+
+
+-agr move ho koi bhi piece toh check kro ki valid move hai ya nahi agr hai toh chlwado or sb bndo ko dikhado
+-like horse can move 2.5 steps agr 1 step chla toh allow hi mt kro move krna
+-
