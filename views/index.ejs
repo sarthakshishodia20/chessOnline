@@ -4,6 +4,20 @@
   <meta charset="UTF-8" />
   <title>Custom Chess Game</title>
   <style>
+    body {
+      margin: 0;
+      padding: 0;
+      animation: gradientBG 15s ease infinite;
+      background: linear-gradient(-45deg, #0f172a, #1e293b, #334155, #0f172a);
+      background-size: 600% 600%;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
     .chessboard {
       display: grid;
       border: 20px solid black;
@@ -13,63 +27,88 @@
       height: 500px;
       transition: transform 0.3s ease;
       position: relative;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+      border-radius: 8px;
     }
+
     .square {
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: background-color 0.3s;
     }
+
     .square.light {
-      background-color: #cce6ff;
+      background-color: #3ca1ff;
     }
+
     .square.dark {
-      background-color: #004080;
+      background-color: #002c57;
     }
+
     .highlight {
-      background-color: rgb(170, 147, 107) !important;
+      background-color: rgb(100, 177, 255) !important;
       border: 7px solid rgb(244, 244, 244);
       border-radius: 5%;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
     }
+
     .piece {
       font-size: 48px;
-      cursor: pointer;
+      cursor: grab;
+      transition: transform 0.2s ease, filter 0.2s ease;
     }
+
+    .piece:active {
+      cursor: grabbing;
+      transform: scale(1.1);
+    }
+
     .piece.white {
       color: white;
-      filter: drop-shadow(0 0 2px rgba(0, 0, 0, 1));
+      filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
     }
+
     .piece.black,
     .piece.black-pawn {
       color: black;
-      filter: drop-shadow(0 0 2px rgba(0, 0, 0, 1));
+      filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
     }
+
     .flipped {
       transform: rotate(180deg);
     }
+
     .flipped .piece {
       transform: rotate(180deg);
     }
+
     .status-bar {
-      color: white;
+      color: #e0f2fe;
       font-size: 24px;
       margin-bottom: 10px;
+      font-family: 'Segoe UI', sans-serif;
     }
+
     .heading {
-      font-size: 32px;
-      color: white;
+      font-size: 36px;
+      color: #f8fafc;
       margin-bottom: 20px;
       font-weight: bold;
+      font-family: 'Georgia', serif;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);
     }
   </style>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-  <div class="w-full h-screen flex flex-col items-center justify-center bg-green-900">
+  <div class="w-full h-screen flex flex-col items-center justify-center">
     <div class="heading">♟️ Custom Chess Game ♞</div>
     <div id="status" class="status-bar">Loading...</div>
     <div class="chessboard"></div>
   </div>
 
+  <!-- Scripts -->
   <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
   <script>
@@ -84,10 +123,19 @@
 
     const getPieceUnicode = (piece) => {
       const unicodePieces = {
-        wp: "♙", bp: "♙", wr: "♖", br: "♜",
-        wn: "♘", bn: "♞", wb: "♗", bb: "♝",
-        wq: "♕", bq: "♛", wk: "♔", bk: "♚",
-      };
+  wp: "♙",  // White pawn unfilled
+  bp: "♙",  // Black pawn filled
+  wr: "♖",  // White rook unfilled
+  br: "♜",  // Black rook filled
+  wn: "♘",  // White knight unfilled
+  bn: "♞",  // Black knight filled
+  wb: "♗",  // White bishop unfilled
+  bb: "♝",  // Black bishop filled
+  wq: "♕",  // White queen unfilled
+  bq: "♛",  // Black queen filled
+  wk: "♔",  // White king unfilled
+  bk: "♚",  // Black king filled
+};
       return unicodePieces[piece] || "";
     };
 
