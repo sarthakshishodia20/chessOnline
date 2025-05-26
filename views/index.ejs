@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Custom Chess Game</title>
+  <title>♕ Chessive</title>
   <style>
     body {
       margin: 0;
@@ -103,7 +103,7 @@
 </head>
 <body>
   <div class="w-full h-screen flex flex-col items-center justify-center">
-    <div class="heading">♟️ Custom Chess Game ♞</div>
+    <div class="heading">♕ Chessive ♔</div>
     <div id="status" class="status-bar">Loading...</div>
     <div class="chessboard"></div>
   </div>
@@ -123,19 +123,13 @@
 
     const getPieceUnicode = (piece) => {
       const unicodePieces = {
-  wp: "♙",  // White pawn unfilled
-  bp: "♙",  // Black pawn filled
-  wr: "♖",  // White rook unfilled
-  br: "♜",  // Black rook filled
-  wn: "♘",  // White knight unfilled
-  bn: "♞",  // Black knight filled
-  wb: "♗",  // White bishop unfilled
-  bb: "♝",  // Black bishop filled
-  wq: "♕",  // White queen unfilled
-  bq: "♛",  // Black queen filled
-  wk: "♔",  // White king unfilled
-  bk: "♚",  // Black king filled
-};
+        wp: "♙", bp: "♙",
+        wr: "♖", br: "♜",
+        wn: "♘", bn: "♞",
+        wb: "♗", bb: "♝",
+        wq: "♕", bq: "♛",
+        wk: "♔", bk: "♚",
+      };
       return unicodePieces[piece] || "";
     };
 
